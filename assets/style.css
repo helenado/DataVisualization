@@ -8,8 +8,9 @@ body {
   body {
     background-image:  url("chocolate2png.png");
     background-repeat: repeat-x;
-    background-color: #ddd0bc;
-    background-size: 250px 150px;}
+    background-color: #ffffff;
+    background-size: 250px 150px;
+    font-family: Optima, sans-serif;}
    
       
   .box_info{
@@ -38,7 +39,7 @@ body {
   /*3a150249*/
   .box {
     border-radius: 20px;
-    background-color: #e1dcd9d0;
+    background-color: #F2D2BD;
     margin: 10px;
     padding: 25px;
     box-shadow: 2px 2px 2px lightgrey;
@@ -58,7 +59,7 @@ body {
     display:flex;
     justify-content: left;
     place-content:space-around;
-    width: 88%;
+    width: 100%;
   }
   
   .radio input[type="radio"] {
@@ -68,23 +69,23 @@ body {
   
   .radio label {
     display: table-caption;
-    background-color: #e98b1044;
-    padding: 15px 15px;
+    background-color: #f5cfca91;
+    padding: 5px 5px;
     font-size: 16px;
-    border: 2px solid #e98b1044;
+    border: 2px solid #d7a59f;
     border-radius: 10px;
-    width: 200%;
+    width: 200px;
     text-align: center;
   }
   
   .radio input[type="radio"]:checked + label {
-    background-color: #14e910cd;              
-    border: 2px solid #f0f006;
+    background-color: #C37B71;              
+    border: 2px solid #ba6e64;
   }
   
   .radio label:hover {
     background-color: #c8bdaf44;
-    border: 2px solid #e98b1044;
+    border: 2px solid #ba6e64;
   }
 
   #treeyear_slider .c-slider-track {

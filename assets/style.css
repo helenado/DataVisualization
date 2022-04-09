@@ -14,26 +14,26 @@ body {
     
    
     
-    .rc-track {
+    .rc-slider-track {
       background-color:#c37b71ab;
     }
     
-    .rc-dot-active {  
+    .rc-slider-dot-active {  
       border-color: #C37B71;
       border: solid 2px #C37B71;
     }
     
-    .rc-handle {
-      background-color: red;
-      border-color: red;
+    .rc-slider-handle {
+      background-color: #C37B71;
+      border-color: #C37B71;
     }
     
-    .rc-handle:hover {
-      border-color: red;
+    .rc-slider-handle:hover {
+      border-color: #C37B71;
     }
     
-    .rc-handle-active:active {
-      border-color: red;
+    .rc-slider-handle-active:active {
+      border-color: #C37B71;
     }
       
   .box_info{

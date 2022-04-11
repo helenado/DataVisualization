@@ -87,3 +87,4 @@ webencodings
 Werkzeug
 widgetsnbextension
 xlrd
+gunicorn

@@ -65,8 +65,8 @@ PyQtWebEngine
 pyrsistent
 python-dateutil
 pytz
-pywin32
-pywinpty
+# pywin32
+# pywinpty
 pyzmq
 requests
 scikit-learn

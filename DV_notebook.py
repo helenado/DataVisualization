@@ -992,7 +992,7 @@ data_origin.drop(data_origin[data_origin["country"]=="Saint Vincent and the Gren
 # In[61]:
 
 
-#!pip install dash_daq
+# !pip install dash_daq
 
 
 # In[65]:
@@ -1544,7 +1544,7 @@ def update_treemap(selected_var='Quantity', selected_flow='Export', selected_yea
 
 
 if __name__ == '__main__':
-    app.run_server()
+    app.run_server(debug=True)
 
 
 # In[ ]:

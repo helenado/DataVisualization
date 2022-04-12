@@ -1,8 +1,6 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
+#!pip install scipy
+#!pip install Dash
+#!pip install dash_daq
 
 import pandas as pd
 import plotly 
@@ -11,8 +9,7 @@ import plotly.figure_factory as ff
 import scipy
 import plotly.graph_objects as go
 import dash
-from dash import Dash, dcc, html
-from dash.dependencies import Input, Output
+from dash import Dash, dcc, html, Input, Output
 import plotly.express as px
 import matplotlib.pyplot as plt
 import matplotlib.colors as mc
@@ -25,29 +22,13 @@ import dash_bootstrap_components as dbc
 import urllib.request, json 
 import dash_daq as daq
 
-#pip install scipy
-#!pip install Dash
-
-
-# In[2]:
-
-
 # Import data
-
 data = pd.read_csv('chocolate.csv')
 continent = pd.read_csv('countryContinent.csv',encoding = "ISO-8859-1")
 imp_exp=pd.read_csv('UNdata_Export_20220301_151116452.csv')
 coord = pd.read_csv('country_points.csv', encoding = "ISO-8859-1")
 
-
-# In[3]:
-
-
 imp_exp=imp_exp[imp_exp['Commodity']=='Cocoa beans, whole or broken, raw or roasted'][['Country or Area','Year','Commodity','Flow','Quantity','Trade (USD)']]
-
-
-# In[4]:
-
 
 # Prepare the data for the merge
 data["company_location"] = data["company_location"].str.title()
@@ -55,113 +36,32 @@ data["country_of_bean_origin"] = data["country_of_bean_origin"].str.title()
 data["company_location"].replace({'U.S.A': 'United States of America','U.K.':'United Kingdom of Great Britain and Northern Ireland','Dominican republic':'Dominican Republic','El salvador':'El Salvador','Vietnam':'Viet Nam','Venezuela':'Venezuela (Bolivarian Republic of)','South Korea':'Korea (Republic of)','New Zealand':'New Zealand','Russia':'Russian Federation','Taiwan':'Taiwan, Province of China','Sao Tome':'Sao Tome and Principe','Sao Tome & Principe':'Sao Tome and Principe','St. Lucia':'Saint Lucia','U.A.E.':'United Arab Emirates','St.Vincent-Grenadines':'Saint Vincent and the Grenadines','Bolivia':'Bolivia (Plurinational State of)'}, inplace=True)
 data["country_of_bean_origin"].replace({'U.S.A': 'United States of America','U.K.':'United Kingdom of Great Britain and Northern Ireland','Dominican republic':'Dominican Republic','El salvador':'El Salvador','Vietnam':'Viet Nam','Venezuela':'Venezuela (Bolivarian Republic of)','South Korea':'Korea (Republic of)','New Zealand':'New Zealand','Russia':'Russian Federation','Taiwan':'Taiwan, Province of China','Sao Tome':'Sao Tome and Principe','Sao Tome & Principe':'Sao Tome and Principe','St. Lucia':'Saint Lucia','U.A.E.':'United Arab Emirates','St.Vincent-Grenadines':'Saint Vincent and the Grenadines','Bolivia':'Bolivia (Plurinational State of)','Burma':'Myanmar','Tanzania':'Tanzania, United Republic of','Trinidad':'Trinidad and Tobago','Dr Congo':'Congo (Democratic Republic of the)'}, inplace=True)
 
-
-# In[5]:
-
-
 # removing Unnamed:0
 data=data.iloc[:,1:]
-
-
-# In[6]:
-
-
 teste=data.merge(continent[['country','continent','sub_region','code_2']].rename(columns={'continent':'company_continent','sub_region':'company_region','code_2':'company_code_2'}), left_on='company_location', right_on='country', how='left')
-
-
-# In[7]:
-
-
 teste[teste['company_continent'].isna()]['company_location'].value_counts
-
-
-# In[8]:
-
-
 teste=teste[teste['company_location']!= 'Scotland']
-
-
-# In[9]:
-
-
 teste=teste.merge(continent[['country','continent','sub_region','code_2']].rename(columns={'continent':'bean_continent','sub_region':'bean_region','code_2':'bean_code_2'}), left_on='country_of_bean_origin', right_on='country', how='left')
-
-
-# In[10]:
-
-
 teste[teste['bean_continent'].isna()]['country_of_bean_origin'].value_counts
-
-
-# In[11]:
-
-
 teste=teste[teste['country_of_bean_origin']!= 'Blend']
-
-
-# In[12]:
-
-
 data=teste
-
-
-# In[13]:
-
-
 data1=data.groupby(by=['company']).mean()
-
-
-# In[14]:
-
 
 imp_exp_regions = imp_exp.merge(continent[['country','continent','sub_region','code_2']].rename(columns={'sub_region':'region'}), left_on = 'Country or Area', right_on= 'country', how= 'left')
 
 
-# ### TREEMAP
-# 
-
-# In[15]:
-
+### TREEMAP
 
 imp_exp_regions.loc[(imp_exp_regions['continent']=='nan') & (imp_exp_regions['Country or Area']!='nan')]
-
-
-# In[16]:
-
-
 imp_exp_regions['country'].isna().sum()
-
-
-# In[17]:
-
-
 imp_exp_regions['continent'].isna().sum()
-#imp_exp_regions[imp_exp_regions['Quantity'].isna()==True]
-
-
-# In[18]:
-
 
 imp_exp_regions= imp_exp_regions[~(imp_exp_regions['Flow'] == 'Re-Export')]
 imp_exp_regions= imp_exp_regions[~(imp_exp_regions['Flow'] == 'Re-Import')]
-
-
-# In[19]:
-
-
 imp_exp_regions["Quantity"]= imp_exp_regions["Quantity"].fillna(imp_exp_regions.groupby('Country or Area')['Quantity'].transform('mean'))
 
 imp_exp_regions['Quantity'].astype(int)
-
-
-# In[20]:
-
-
 imp_exp_regions=imp_exp_regions[imp_exp_regions['Country or Area'].isnull()!= True] #removing nulls from Country or Area Column
-
-
-# In[21]:
-
 
 imp_exp_regions.loc[imp_exp_regions['Country or Area'] == 'Wallis and Futuna Isds', 'continent'] = 'Oceania'
 imp_exp_regions.loc[imp_exp_regions['Country or Area'] == 'Wallis and Futuna Isds','region'] = 'Polynesia'
@@ -232,37 +132,13 @@ imp_exp_regions= imp_exp_regions[~(imp_exp_regions['Country or Area'] == 'EU-28'
 imp_exp_regions= imp_exp_regions[~(imp_exp_regions['Country or Area'] == 'So. African Customs Union')]
 imp_exp_regions= imp_exp_regions[~(imp_exp_regions['Country or Area'] == 'China, Hong Kong SAR')]
 
-
-# In[22]:
-
-
 flows_df=imp_exp_regions.drop(columns=['country', 'code_2'])
-
-
-# In[23]:
-
-
 #convert data type and sort the data by Year
 flows_df=flows_df.sort_values(by=['Year'])
-
-
-# In[24]:
-
-
 flows_df=flows_df.dropna(how='any')
-
-
-# In[25]:
-
-
 groupby_flows=flows_df.groupby(['Year','continent', 'region', 'Country or Area', 'Flow']).mean(['Trade (USD)','Quantity'])
 groupby_flows.reset_index(inplace=True)
 groupby_flows.head(3)
-
-
-# In[26]:
-
-
 groupby_flows=groupby_flows[groupby_flows['Year']!=1988]
 groupby_flows=groupby_flows[groupby_flows['Year']!=1989]
 groupby_flows=groupby_flows[groupby_flows['Year']!=1990]
@@ -271,25 +147,11 @@ groupby_flows=groupby_flows[groupby_flows['Year']!=1990]
 flows_df=flows_df[flows_df['Year']!=1988]
 flows_df=flows_df[flows_df['Year']!=1989]
 flows_df=flows_df[flows_df['Year']!=1990]
-
-
-# In[27]:
-
-
 africa_count= len(flows_df.groupby('continent')['Country or Area'].unique()[0])
 americas_count= len(flows_df.groupby('continent')['Country or Area'].unique()[1])
 asia_count= len(flows_df.groupby('continent')['Country or Area'].unique()[2])
 europe_count= len(flows_df.groupby('continent')['Country or Area'].unique()[3])
 oceania_count= len(flows_df.groupby('continent')['Country or Area'].unique()[4])
-
-# print('Africa has: ' + str(africa_count) + ' countries')
-# print('Americas has: ' + str(americas_count) + ' countries')
-# print('Asia has: ' + str(asia_count) + ' countries')
-# print('Europe has: ' + str(europe_count) + ' countries')
-# print('Oceania has: ' + str(oceania_count) + ' countries')
-
-
-# In[28]:
 
 
 nr_countries = [['Africa', africa_count],
@@ -300,61 +162,9 @@ nr_countries = [['Africa', africa_count],
 
 df_nr_countries = pd.DataFrame(nr_countries, columns = ['Continent', 'Nr of Countries'])
 print(df_nr_countries)
-
-
-# In[29]:
-
-
 groupby_flows= pd.merge(df_nr_countries, groupby_flows, left_on='Continent', right_on='continent')
 groupby_flows.drop(columns='continent', inplace=True)
 groupby_flows.head(3)
-
-
-# In[30]:
-
-
-#NOT USED
-# def scatter_flows(flow):
-#     fig = px.scatter(groupby_flows[groupby_flows['Flow']==flow],
-#                  x='Quantity',
-#                  y='Trade (USD)',
-#                  animation_frame='Year', 
-#                  animation_group='Continent', 
-#                  size='Nr of Countries', 
-#                  color='Continent',
-#                  hover_name='Continent',
-#                  )
-#     fig.update_layout(
-#                     title=('Quantity of Cacao ' + str(flow) + 'ed vs Trade (USD) by Continents in 1988 - 2019'),
-#                     xaxis=dict(title=('Quantity '+ str(flow) + 'ed')),
-#                     yaxis=dict(title=(str(flow) + ' Trade (USD) of Cacao')),
-#                     #paper_bgcolor='rgb(500, 500, 500)'#,
-#                     #plot_bgcolor='rgb(243, 243, 243)'
-#                     )
-                    
-#     fig.layout.updatemenus[0].buttons[0].args[1]['transition']['duration'] = 3000
-#     return fig.show()
-
-
-# In[31]:
-
-
-# def tree_flows(flow, variable, year):
-#     fig = px.treemap(groupby_flows[(groupby_flows['Flow']==flow) & (groupby_flows['Year']==year) ], 
-#                      path=['Country or Area'],
-#                      values=variable, color=variable, color_continuous_scale='sunset'
-#                     )
-            
-#     return fig.show()
-
-
-# In[32]:
-
-
-#tree_flows(flow='Export', variable='Quantity', year=2010)
-
-
-# In[33]:
 
 
 tree_variables = [
@@ -366,12 +176,6 @@ tree_flows_Dict = [
                     {'label': 'Export', 'value': 'Export'},
                     {'label': 'Import', 'value': 'Import'}
                  ]
-
-
-# # ----- Helena
-# 
-
-# In[34]:
 
 
 
@@ -387,139 +191,34 @@ ingredients = [
 ]
 
 
-# In[35]:
-
-
-# @app.callback(
-   
-#    [Output("name_company_id", "children"),
-#     Output("rating_id", "children"),
-#     Output("country_id", "children"),
-#     Output('graph1', 'figure')],
-   
-#     [Input('drop_id', 'value'),
-#      Input('percent_id','value')] )
-
-# def update_graph(drop_id,percent_id):
-    
-#     filtered=data
-#     for each in drop_id:
-#         filtered=filtered[filtered.isin([each]).any(1)] 
-    
-#     filtered = filtered[(filtered['cocoa_percent'] >= percent_id[0]) & (filtered['cocoa_percent'] <= percent_id[1])]
-
-#     # maxi=np.max(filtered['rating'])
-#     # filtered=filtered[filtered['rating']==maxi]
-    
-#     data_inter = dict(type='bar', x=filtered['company'], y=filtered['rating'])
-   
-#     layout_1 = dict(xaxis=dict(title='Companies'),
-#                    yaxis=dict(title='Ratings'))
-    
-#     fig = go.Figure(data=data_inter, layout=layout_1)  
-
-#     if filtered.empty:
-#         name_company = 'No company was found'
-#         rating = 'No rating was found'
-#         country= 'No country was found'
-        
-#     else:
-#         name_company=str(filtered.head(1)['company'].values[0])
-#         rating=str(filtered.head(1)['rating'].values[0])
-#         country=str(filtered.head(1)['company_location'].values[0])
-    
-#     return name_company ,  \
-#            rating , \
-#            country , \
-#            fig
-
-# if __name__ == '__main__':
-#     app.run_server(debug=True, use_reloader=False)
-
-
-# # ------- Filipa
-# 
-
-# ### Column count_tastes
-# 
-
-# In[36]:
-
+### Column count_tastes
 
 test_taste = data
-
-
-# In[37]:
-
-
 test_taste['first_taste'].fillna(value = 0, inplace = True)
 test_taste['second_taste'].fillna(value = 0, inplace = True)
 test_taste['third_taste'].fillna(value = 0, inplace = True)
 test_taste['fourth_taste'].fillna(value = 0, inplace = True)
 
-
-# In[38]:
-
-
-#taste = lambda x: 1 if x.isna() == False else 0
 taste = lambda x: 1 if x != 0 else x
-
-
-# In[39]:
-
-
 test_taste['binFirst_taste'] = test_taste['first_taste'].apply(taste)
 test_taste['binSecond_taste'] = test_taste['second_taste'].apply(taste)
 test_taste['binThird_taste'] = test_taste['third_taste'].apply(taste)
 test_taste['binFourth_taste'] = test_taste['fourth_taste'].apply(taste)
-
-
-# In[41]:
-
-
 test_taste['count_tastes'] = test_taste['binFirst_taste'] + test_taste['binSecond_taste'] + test_taste['binThird_taste'] + test_taste['binFourth_taste']
 
 
-# ### Radar Plot
-# 
-
-# In[43]:
-
+### Radar Plot
 
 feat_radar = ['cocoa_percent', 'rating', 'counts_of_ingredients', 'count_tastes']
-
-
-# In[44]:
-
-
 radar = pd.DataFrame(round(test_taste.groupby(by = 'company')[feat_radar].mean(),2))
 radar['company_name'] = radar.index
 radar.insert(0, 'cocoa_level', round((5 * radar['cocoa_percent']) / 100, 2))
 radar.drop(columns = {'cocoa_percent'}, inplace = True)
 
-
-# In[45]:
-
-
 feat_radar = ['cocoa_level', 'rating', 'counts_of_ingredients', 'count_tastes']
-
-
-# In[46]:
-
-
 company1 = '5150'
 company2 = 'A. Morin'
-
-
-# In[47]:
-
-
 radar['company_name'].isin([company1, company2])
-
-
-# In[48]:
-
-
 company1_list = []
 
 company1_df = pd.DataFrame(radar[radar['company_name'] == company1])
@@ -527,81 +226,17 @@ for i in range(len(radar.columns)-1):
     company1_list.append(radar[radar['company_name'] == company1].iloc[0,i])
 
 company1_list
-
-
-# In[49]:
-
-
 company2_list = []
 
 company2_df = pd.DataFrame(radar[radar['company_name'] == company2])
 for i in range(len(radar.columns)-1):
     company2_list.append(radar[radar['company_name'] == company2].iloc[0,i])
 
-company2_list
-
-
-# In[50]:
-
-
-feat_radar
-
-
-# In[51]:
-
-
-
-fig = go.Figure(data=go.Scatterpolar(
-        r=company1_list,
-        theta=['Level of Cocoa', 'Rating', 'Number of Ingredients', 'Number of Tastes'],
-        fill='toself', 
-        marker_color = 'rgb(205,102,29)',   
-        opacity =1, 
-        hoverinfo = "text" ,
-        name = company1,
-        text  = [company1_df.columns[i] + ' = ' + str(company1_df.iloc[0,i]) for i in range(len(company1_list))]
-    ), layout = Layout(
-    paper_bgcolor='rgba(0,0,0,0)',
-    plot_bgcolor='rgba(0,0,0,0)'))
-fig.add_trace(go.Scatterpolar(
-        r=company2_list,
-        theta=['Level of Cocoa', 'Rating', 'Number of Ingredients', 'Number of Tastes'],
-        fill='toself',
-        marker_color = 'rgb(193,255,193)',
-        hoverinfo = "text" ,
-        name= company2,
-        text  = [company2_df.columns[i] + ' = ' + str(company2_df.iloc[0,i]) for i in range(len(company2_list))]
-        ))
-
-fig.update_layout(
-  polar=dict(
-    radialaxis=dict(
-      visible=True,
-      range=[0, 5]
-    )),
-  showlegend=True
-)
-
-fig.show()
-
-
-# In[52]:
-
 
 companies = list(data['company'].unique())
-#companies
 
 
-# ### Routes Dataframe
-
-# In[54]:
-
-
-coord
-
-
-# In[55]:
-
+### Routes Dataframe
 
 routes_bean = pd.DataFrame(data[['company', 'company_location', 'company_code_2', 'country_of_bean_origin', 'bean_code_2']])
 
@@ -619,12 +254,6 @@ count_routes['count'] = routes_bean.groupby(['route']).size().values
 # Pick the routes with most flights
 count_routes = count_routes.loc[count_routes['count'] > np.quantile(count_routes['count'], q = 0.75)]
 count_routes = count_routes.reset_index()
-
-count_routes
-
-
-# In[56]:
-
 
 fig_routes = go.Figure()
 
@@ -651,10 +280,8 @@ cmap = plt.cm.RdPu
 color = cmx.ScalarMappable(cmap = cmap).to_rgba(count_routes['count'], bytes = True)
 color = ['rgba(' + str(x[0]) + ', ' + str(x[1]) + ', ' + str(x[2]) + ', ' + str(x[3]) + ')' for x in color]
 
-#maxcount_f = max(count_routes['count'])
 
-#bean_paths = []
-for i in range(len(count_routes)): #routes_bean
+for i in range(len(count_routes)): 
     fig_routes.add_trace(
         go.Scattergeo(
             locationmode = 'geojson-id',
@@ -690,166 +317,7 @@ fig_routes.update_layout(
 fig_routes.update_layout(height=400, margin={"r":40,"t":0,"l":40,"b":0})
 
 
-# In[57]:
-
-
-
-# # The app itself
-
-# app = dash.Dash(__name__)
-
-# app.layout = html.Div([
-    
-#     html.H4('Choose the companies you want to compare'),
-        
-#         html.Div([
-                      
-#             html.Div([
-#                 html.Label('Company 1'),
-#                     dcc.Dropdown(
-#                                     id='drop_comp1_id',
-#                                     options=companies,
-#                                     value='5150',
-#                                     multi=False
-#                                 ),
-#             ], className='box', style={'margin': '10px', 'padding-top':'15px', 'padding-bottom':'15px'}),
-            
-#             html.Div([
-#                 html.Label('Company 2'),
-#                     dcc.Dropdown(
-#                                     id='drop_comp2_id',
-#                                     options=companies,
-#                                     value='A. Morin',
-#                                     multi=False
-#                                 ),
-#             ], className='box', style={'margin': '10px', 'padding-top':'15px', 'padding-bottom':'15px'})]),
-                                
-            
-            
-#             html.Div([
-#                 html.Div([
-#                     html.Label('Results', style={'font-size': 'medium'}),
-#                     html.Br(),
-#                     html.Br(),
- 
-#                 html.Div([ 
-#                     html.Div([
-                        
-#                         html.Div([
-#                             html.Br(),
-#                             html.Label(id='title_map', style={'font-size':'medium'}), 
-#                             html.Br(),
-#                         ], style={'width': '70%'}),
-#                         html.Div([
-
-#                         ], style={'width': '5%'}),
-                       
-                    
-#                     dcc.Graph(id='radar'),
-
-#                 ], className='box', style={'padding-bottom': '0px'}), 
-#                     ]),
-#                 ], style={'width': '60%'}),           
-#             ], className='row')
-# ])
-    
-
-
-# In[58]:
-
-
-# @app.callback(
-   
-#    Output('radar', 'figure'),
-   
-#     [Input('drop_comp1_id', 'value'),
-#      Input('drop_comp2_id','value')] )
-
-# def update_radar(company1,company2):
-
-#     feat_radar = ['cocoa_percent', 'rating', 'counts_of_ingredients', 'count_tastes']
-
-#     radar = pd.DataFrame(round(test_taste.groupby(by = 'company')[feat_radar].mean(),2))
-#     radar['company_name'] = radar.index
-#     radar.insert(0, 'cocoa_level', round((5 * radar['cocoa_percent']) / 100, 2))
-#     radar.drop(columns = {'cocoa_percent'}, inplace = True)
-    
-#     feat_radar = ['cocoa_level', 'rating', 'counts_of_ingredients', 'count_tastes']
-
-#     company1_list = []
-
-#     company1_df = pd.DataFrame(radar[radar['company_name'] == company1])
-#     for i in range(len(radar.columns)-1):
-#         company1_list.append(radar[radar['company_name'] == company1].iloc[0,i])
-
-#     company2_list = []
-
-#     company2_df = pd.DataFrame(radar[radar['company_name'] == company2])
-#     for i in range(len(radar.columns)-1):
-#         company2_list.append(radar[radar['company_name'] == company2].iloc[0,i])
-
-
-#     fig = go.Figure(data=go.Scatterpolar(
-#             r=company1_list,
-#             theta=['Level of Cocoa', 'Rating', 'Number of Ingredients', 'Number of Tastes'],
-#             fill='toself', 
-#             marker_color = 'rgb(205,102,29)',   
-#             opacity =1, 
-#             hoverinfo = "text" ,
-#             name = company1,
-#             text  = [company1_df.columns[i] + ' = ' + str(company1_df.iloc[0,i]) for i in range(len(company1_list))]
-#         ), layout = Layout(
-#         paper_bgcolor='rgba(0,0,0,0)',
-#         plot_bgcolor='rgba(0,0,0,0)'))
-#     fig.add_trace(go.Scatterpolar(
-#             r=company2_list,
-#             theta=['Level of Cocoa', 'Rating', 'Number of Ingredients', 'Number of Tastes'],
-#             fill='toself',
-#             marker_color = 'rgb(193,255,193)',
-#             hoverinfo = "text" ,
-#             name= company2,
-#             text  = [company2_df.columns[i] + ' = ' + str(company2_df.iloc[0,i]) for i in range(len(company2_list))]
-#             ))
-
-#     fig.update_layout(
-#     polar=dict(
-#         radialaxis=dict(
-#         visible=True,
-#         range=[0, 5]
-#         )),
-#     showlegend=True
-#     )
-
-#     return fig
-#     # ----------------------------------------------------------------------
-
-#     # if filtered.empty:
-#     #     name_company = 'No company was found'
-#     #     rating = 'No rating was found'
-#     #     country= 'No country was found'
-        
-#     # else:
-#     #     name_company=str(filtered.head(1)['company'].values[0])
-#     #     rating=str(filtered.head(1)['rating'].values[0])
-#     #     country=str(filtered.head(1)['company_location'].values[0])
-    
-#     # return name_company ,  \
-#     #        rating , \
-#     #        country , \
-#     #        fig
-
-
-# In[59]:
-
-
-# if __name__ == '__main__':
-#     app.run_server()
-
-
-# MAP
-
-# In[60]:
-
+### MAP
 
 path_geo = ''
 
@@ -982,22 +450,7 @@ data_origin.drop(data_origin[data_origin["country"]=="Grenada"].index, inplace=T
 data_origin.drop(data_origin[data_origin["country"]=="Saint Vincent and the Grenadines"].index, inplace=True)
 
 
-# In[ ]:
-
-
-
-
-
-# # -------------------APP------------------
-
-# In[61]:
-
-
-# !pip install dash_daq
-
-
-# In[65]:
-
+# -------------------APP------------------
 
 app = dash.Dash(__name__)
 
@@ -1223,6 +676,7 @@ app.layout = html.Div([
                                                 
                                                 html.Div([                                                        
                                                         html.H4("Pick a Flow:"),
+                                                        html.Br(),
                                                         dbc.RadioItems(
                                                                 id="radioflowtree_id",
                                                                 options=tree_flows_Dict, 
@@ -1267,7 +721,7 @@ app.layout = html.Div([
                                 html.Div([
                                         html.Div([
                                                 html.Br(),
-                                                html.P('In this visualization you can see which are the main routes of cocoa\'s bean around the world. The origin of the bean is the country where it is produced and the destination is the country of the company that uses thoses beans. Only the routes around the 75% quantile were chosen to be present in this visualization'),
+                                                html.P('In this visualization you can see which are the main routes of cocoa\'s bean around the world. The origin of the bean is the country where it is produced and the destination is the country of the company that uses thoses beans. Only the routes above the 75% quantile were chosen to be present in this visualization'),
                                                 html.Br(),
                                                 html.Br(),
                                                 html.Img(src=app.get_asset_url('Cocoa-Bean-PNG-Image.png'), style={'margin-left': 'auto','margin-right': 'auto','display': 'block', 'width': '70%'})
@@ -1300,9 +754,6 @@ app.layout = html.Div([
                         ],style={'display':'flex'})
                         
                 ],style={'margin':'80px'})
-
-
-# In[66]:
 
 
 
@@ -1460,7 +911,10 @@ def update_graph(drop_id,percent_id):
     fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', title={'text':'Word Cloud <br><sup>Companies that sell the chocolate desired</sup>','y':0.9,
                       'x':0.5,'xanchor': 'center','yanchor': 'top'},title_font_size=25)
     
-    return name_company ,             rating ,            country ,            fig
+    return name_company ,  \
+           rating , \
+           country , \
+           fig
 
 @app.callback(
     Output("choroplethmapbox", "figure"),
@@ -1487,7 +941,6 @@ def make_choroplethmap(country_radio,number_radio):
     data_choroplethmap = dict(type='choroplethmapbox', 
                             geojson=data_geo,
                             locations=df["country"], 
-                            #locationmode="country names",
                             z=df[number_radio],                         
                             colorscale='brwnyl',
                             colorbar=dict(title=legend_title),
@@ -1501,7 +954,7 @@ def make_choroplethmap(country_radio,number_radio):
                                             ) for feature in data_geo['features']]
                                             ),
                                 title=dict(text=main_title1,
-                                        x=.5 # Title relative position according to the xaxis, range (0,1)
+                                        x=.5 
                                         )
                             )
     
@@ -1535,27 +988,8 @@ def update_treemap(selected_var='Quantity', selected_flow='Export', selected_yea
     
     return fig
 
-# @app.callback(
-   
-#    Output('routes_vis', 'figure')
-# )
-
-
-
-
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
+    app.run_server()
 
 

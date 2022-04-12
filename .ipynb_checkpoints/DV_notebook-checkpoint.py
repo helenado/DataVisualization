@@ -11,8 +11,7 @@ import plotly.figure_factory as ff
 import scipy
 import plotly.graph_objects as go
 import dash
-from dash import Dash, dcc, html
-from dash.dependencies import Input, Output
+from dash import Dash, dcc, html, Input, Output
 import plotly.express as px
 import matplotlib.pyplot as plt
 import matplotlib.colors as mc
